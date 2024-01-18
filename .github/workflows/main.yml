@@ -1,34 +1,38 @@
-name: CI Pipeline
+name: Java CI
 
-# Triggers the workflow on push or pull request events to the main branch
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  build-and-test:
-    # The type of runner that the job will run on
+  build:
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
-    # Add steps here to install dependencies, build, and test your project
-    # Below are placeholders. Replace them with your actual commands.
+    - name: Set up JDK 8
+      uses: actions/setup-java@v2
+      with:
+        java-version: '8'
+        distribution: 'adopt'
 
-    # Example: Installing dependencies
-    - name: Install dependencies
-      run: echo "Replace this with a command to install dependencies"
+    - name: Build with Maven
+      run: mvn --batch-mode --update-snapshots package
+      # Add this after the build step
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v1
+      if: always()
+      with:
+        files: target/**/*.xml
 
-    # Example: Building the application
-    - name: Build the application
-      run: echo "Replace this with a command to build your application"
+        # Add this after the test results step
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2.2.4
+      with:
+         name: my-app-1.0
+         path: target/*
 
-    # Example: Running tests
-    - name: Run tests
-      run: echo "Replace this with a command to run tests"
+
